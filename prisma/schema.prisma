@@ -1,0 +1,267 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model BbsUser {
+  id          Int      @id @default(autoincrement())
+  name        String
+  email       String   @unique
+  password    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  posts       BbsPost[]
+  comments    BbsComment[]
+}
+
+model BbsPost {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId      Int
+  user      BbsUser     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  comments  BbsComment[]
+}
+
+model BbsComment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    Int
+  postId    Int
+
+  Bbsuser      BbsUser     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Bbspost      BbsPost     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+}
+
+
+// 過去
+model Cat {
+  id          Int     @id @default(autoincrement())
+  name        String
+  sex         String
+  birthday    String
+  CatImageKey String?
+  CatImageUrl String?
+
+  breedId Int
+  breed   Breed @relation(fields: [breedId], references: [id], onDelete: Cascade)
+}
+
+// カテゴリーは１つ
+model Breed {
+  id   Int     @id @default(autoincrement())
+  name String
+  slug String? @unique
+
+  cats Cat[]
+}
+
+// 猫ブログ
+model CatBlog {
+  id                Int      @id @default(autoincrement())
+  title             String
+  content           String
+  thumbnailImageKey String?
+  ImageUrl          String?
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  // カテゴリーは必須にしない
+  categoryId      Int?
+  catBlogCategory CatBlogCategory? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}
+
+model CatBlogCategory {
+  id        Int       @id @default(autoincrement())
+  name      String
+  slug      String?   @unique
+  catBlog   CatBlog[]
+}
+
+// 商品情報
+model CatGoods {    
+  id        Int     @id @default(autoincrement())
+  name      String
+  price     Int
+  imageKey  String?
+  imageUrl  String?
+
+  cartItems   CatCartItem[]
+  orderitems  OrderItem[]
+}
+
+model CatCart {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items       CatCartItem[]
+}
+
+model CatCartItem {
+  id        Int       @id @default(autoincrement())
+
+  cartId    Int
+  cart      CatCart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  goodsId   Int
+  goods     CatGoods  @relation(fields: [goodsId], references: [id], onDelete: Cascade)
+
+  quantity  Int       @default(1)
+}
+
+// 購入した商品の1件分のテーブル
+model CatOrder {
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now())   // 購入日時
+
+  items       OrderItem[]
+}
+
+// 購入した商品の明細
+model OrderItem {
+  id        Int       @id @default(autoincrement())
+
+  orderId   Int
+  order     CatOrder  @relation(fields: [orderId], references: [id])
+
+  goodsId   Int
+  goods     CatGoods  @relation(fields: [goodsId], references: [id])
+
+  quantity  Int
+  price     Int
+}
+
+
+
+
+// 過去のプロジェクト
+// 1つのPostに対して投稿者は1人だけ
+model Post {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  ImageKey  String?
+  ImageUrl  String?
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  comments Comment[]
+  likes    Like[]
+}
+
+model User {
+  id          String  @id // supabaseが重複しないidを発行してくれるためautoincrementはいらない
+  email       String? @unique
+  accountName String?
+  name        String?
+
+  posts    Post[]
+  comments Comment[]
+  likes    Like[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+
+  postId Int
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  postId Int
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // この複合ユニークキーに対して、 postId_userIdを生成する
+  @@unique([postId, userId]) // 同じユーザーが同じ投稿に何回もいいねすることを防ぐ
+}
+
+// 別のプロジェクトのテーブル
+// Artist ↔ Event（多対多）
+model Event {
+  id             Int      @id @default(autoincrement())
+  eventTitle     String?
+  eventDate      DateTime
+  startTime      String?
+  ticketImageKey String?
+  note           String?
+  songList       String?
+  rating         Int? // レビュー
+
+  // 画像が0件でも空配列になるからオプショナルにしなくてもいい
+  // memoryImage   String[]
+
+  placeId Int
+  place   Place @relation(fields: [placeId], references: [id])
+
+  eventImages EventImage[]
+  artist      Artist[]
+}
+
+model Artist {
+  id       Int     @id @default(autoincrement())
+  name     String  @unique // 同一アーティストを重複させない
+  imageUrl String?
+  events   Event[]
+}
+
+model Place {
+  id     Int     @id @default(autoincrement())
+  name   String
+  events Event[]
+}
+
+model EventImage {
+  id      Int     @id @default(autoincrement())
+  url     String // 存在するならurlは必ず持つ必要があるので?にしない
+  comment String?
+
+  eventId Int
+  event   Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model Pokemon {
+  id     Int           @id @default(autoincrement())
+  name   String
+  weight Int
+  detail String        @default("")
+  types  PokemonType[]
+}
+
+model Type {
+  id       Int           @id @default(autoincrement())
+  name     String
+  pokemons PokemonType[]
+}
+
+model PokemonType {
+  id        Int     @id @default(autoincrement())
+  pokemonId Int
+  typeId    Int     @map("type_id")
+  pokemon   Pokemon @relation(fields: [pokemonId], references: [id], onDelete: Cascade)
+  type      Type    @relation(fields: [typeId], references: [id], onDelete: Cascade)
+}
