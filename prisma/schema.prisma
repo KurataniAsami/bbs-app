@@ -46,187 +46,148 @@ model BbsComment {
   @@index([postId])
 }
 
-
-// 過去
+// 過去 
 model Cat {
   id          Int     @id @default(autoincrement())
   name        String
   sex         String
+  breedId     Int
   birthday    String
   CatImageKey String?
   CatImageUrl String?
-
-  breedId Int
-  breed   Breed @relation(fields: [breedId], references: [id], onDelete: Cascade)
+  breed       Breed   @relation(fields: [breedId], references: [id], onDelete: Cascade)
 }
 
-// カテゴリーは１つ
 model Breed {
   id   Int     @id @default(autoincrement())
   name String
   slug String? @unique
-
   cats Cat[]
 }
 
-// 猫ブログ
 model CatBlog {
-  id                Int      @id @default(autoincrement())
+  id                Int              @id @default(autoincrement())
   title             String
   content           String
   thumbnailImageKey String?
+  createdAt         DateTime         @default(now()) @map("created_at")
+  categoryId        Int?
   ImageUrl          String?
-  createdAt         DateTime @default(now()) @map("created_at")
-
-  // カテゴリーは必須にしない
-  categoryId      Int?
-  catBlogCategory CatBlogCategory? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  catBlogCategory   CatBlogCategory? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 }
 
 model CatBlogCategory {
-  id        Int       @id @default(autoincrement())
-  name      String
-  slug      String?   @unique
-  catBlog   CatBlog[]
+  id      Int       @id @default(autoincrement())
+  name    String
+  slug    String?   @unique
+  catBlog CatBlog[]
 }
 
-// 商品情報
-model CatGoods {    
-  id        Int     @id @default(autoincrement())
-  name      String
-  price     Int
-  imageKey  String?
-  imageUrl  String?
-
-  cartItems   CatCartItem[]
-  orderitems  OrderItem[]
+model CatGoods {
+  id         Int           @id @default(autoincrement())
+  name       String
+  price      Int
+  imageKey   String?
+  imageUrl   String?
+  cartItems  CatCartItem[]
+  orderitems OrderItem[]
 }
 
 model CatCart {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  items       CatCartItem[]
+  id        Int           @id @default(autoincrement())
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  items     CatCartItem[]
 }
 
 model CatCartItem {
-  id        Int       @id @default(autoincrement())
-
-  cartId    Int
-  cart      CatCart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
-
-  goodsId   Int
-  goods     CatGoods  @relation(fields: [goodsId], references: [id], onDelete: Cascade)
-
-  quantity  Int       @default(1)
+  id       Int      @id @default(autoincrement())
+  cartId   Int
+  goodsId  Int
+  quantity Int      @default(1)
+  cart     CatCart  @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  goods    CatGoods @relation(fields: [goodsId], references: [id], onDelete: Cascade)
 }
 
-// 購入した商品の1件分のテーブル
 model CatOrder {
-  id          Int       @id @default(autoincrement())
-  createdAt   DateTime  @default(now())   // 購入日時
-
-  items       OrderItem[]
+  id        Int         @id @default(autoincrement())
+  createdAt DateTime    @default(now())
+  items     OrderItem[]
 }
 
-// 購入した商品の明細
 model OrderItem {
-  id        Int       @id @default(autoincrement())
-
-  orderId   Int
-  order     CatOrder  @relation(fields: [orderId], references: [id])
-
-  goodsId   Int
-  goods     CatGoods  @relation(fields: [goodsId], references: [id])
-
-  quantity  Int
-  price     Int
+  id       Int      @id @default(autoincrement())
+  orderId  Int
+  goodsId  Int
+  quantity Int
+  price    Int
+  goods    CatGoods @relation(fields: [goodsId], references: [id])
+  order    CatOrder @relation(fields: [orderId], references: [id])
 }
 
-
-
-
-// 過去のプロジェクト
-// 1つのPostに対して投稿者は1人だけ
 model Post {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   content   String
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   ImageKey  String?
   ImageUrl  String?
-
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  comments Comment[]
-  likes    Like[]
+  userId    String?
+  comments  Comment[]
+  likes     Like[]
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-  id          String  @id // supabaseが重複しないidを発行してくれるためautoincrementはいらない
-  email       String? @unique
+  id          String    @id
+  email       String?   @unique
   accountName String?
   name        String?
-
-  posts    Post[]
-  comments Comment[]
-  likes    Like[]
+  comments    Comment[]
+  likes       Like[]
+  posts       Post[]
 }
 
 model Comment {
   id        Int      @id @default(autoincrement())
   content   String
   createdAt DateTime @default(now())
-
-  postId Int
-  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    Int
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Like {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
+  postId    Int
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  postId Int
-  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // この複合ユニークキーに対して、 postId_userIdを生成する
-  @@unique([postId, userId]) // 同じユーザーが同じ投稿に何回もいいねすることを防ぐ
+  @@unique([postId, userId])
 }
 
-// 別のプロジェクトのテーブル
-// Artist ↔ Event（多対多）
 model Event {
-  id             Int      @id @default(autoincrement())
+  id             Int          @id @default(autoincrement())
   eventTitle     String?
   eventDate      DateTime
   startTime      String?
   ticketImageKey String?
   note           String?
   songList       String?
-  rating         Int? // レビュー
-
-  // 画像が0件でも空配列になるからオプショナルにしなくてもいい
-  // memoryImage   String[]
-
-  placeId Int
-  place   Place @relation(fields: [placeId], references: [id])
-
-  eventImages EventImage[]
-  artist      Artist[]
+  rating         Int?
+  placeId        Int
+  place          Place        @relation(fields: [placeId], references: [id])
+  eventImages    EventImage[]
+  artist         Artist[]     @relation("ArtistToEvent")
 }
 
 model Artist {
   id       Int     @id @default(autoincrement())
-  name     String  @unique // 同一アーティストを重複させない
+  name     String  @unique
   imageUrl String?
-  events   Event[]
+  events   Event[] @relation("ArtistToEvent")
 }
 
 model Place {
@@ -237,11 +198,10 @@ model Place {
 
 model EventImage {
   id      Int     @id @default(autoincrement())
-  url     String // 存在するならurlは必ず持つ必要があるので?にしない
+  url     String
   comment String?
-
   eventId Int
-  event   Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
 }
 
 model Pokemon {
