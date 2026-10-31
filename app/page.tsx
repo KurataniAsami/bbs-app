@@ -2,13 +2,11 @@ import Image from "next/image";
 import { prisma } from "@/libs/prisma";
 import {
   Card,
-  CardAction,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import Link from "next/link";
 
 export default async function Home() {
   const posts = await prisma.bbsPost.findMany({
@@ -30,10 +28,17 @@ export default async function Home() {
             <CardHeader>
               <CardTitle
                 className="text-blue-500 font-bold text-xl"
-              >{post.title}</CardTitle>
+              >
+                <Link href={`/bbs/${post.id}`}>
+                  {post.title}
+                </Link>
+                </CardTitle>
             </CardHeader>
             <CardContent>
-              <p>投稿者：{post.user.name}</p>
+              <div className="flex gap-2 mb-3">
+                <p>投稿者：{post.user.name} |</p>
+                <p>作成日：{post.user.createdAt.toLocaleDateString()}</p>
+              </div>
               {post.content}
             </CardContent>
           </Card>

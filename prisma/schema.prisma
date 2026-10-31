@@ -26,9 +26,9 @@ model BbsPost {
   updatedAt   DateTime @updatedAt
 
   userId      Int
-  user      BbsUser     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        BbsUser     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  comments  BbsComment[]
+  comments    BbsComment[]
 }
 
 model BbsComment {
