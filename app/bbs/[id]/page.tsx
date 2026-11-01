@@ -1,12 +1,5 @@
-import Image from "next/image";
-import { prisma } from "@/libs/prisma";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import Link from "next/link";
+import { prisma } from "@/libs/prisma";
 import BbsDetail from "@/app/components/BbsDetail";
 
 type Props = {
