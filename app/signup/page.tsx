@@ -77,16 +77,15 @@ export default function SignupPage() {
 
             <button
               type="submit"
-              className="w-full mt-3 rounded py-3 bg-blue-500 text-white"
-              style={{ width: '100%', marginBottom: '15px' }}
+              className="w-full mt-3 rounded py-3 mb-3 bg-blue-500 text-white"
             >
               登録する
             </button>
           </form>
 
-          <p style={{ textAlign: 'center', fontSize: '14px' }}>
+          <p className='text-center'>
             すでにアカウントをお持ちですか？ <br />
-            <Link href="/login" style={{ color: '#0070f3' }}>
+            <Link href="/login" className='text-blue-500'>
               ログインはこちら
             </Link>
           </p>

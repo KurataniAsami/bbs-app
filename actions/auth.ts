@@ -49,31 +49,44 @@ export async function signup(formData: FormData) {
   redirect('/');
 }
 
-// export async function login(formData: FormData) {
-//   const email = formData.get('email') as string;
-//   const password = formData.get('password') as string;
+export async function login(formData: FormData) {
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
 
-//   try {
-//     const userRepository = await getRepository(User);
-//     const user = await userRepository.findOneBy({ email });
+  if (!email || !password) {
+    return { error: "すべてのフィールドを入力してください" };
+  }
 
-//     if (!user) {
-//       return { error: 'メールアドレスまたはパスワードが正しくありません' };
-//     }
+  try {
+    // メールアドレスが一致するユーザーを検索
+    const user = await prisma.bbsUser.findUnique({
+      where: { email },
+    });
 
-//     const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!user) {
+      return { error: "メールアドレスまたはパスワードが正しくありません" };
+    }
 
-//     if (!passwordMatch) {
-//       return { error: 'メールアドレスまたはパスワードが正しくありません' };
-//     }
+    // 入力したパスワードとDBのパスを照合
+    const passwordMatch = await bcrypt.compare(
+      password,
+      user.password
+    );
 
-//     await createSession(user.id.toString());
-//   } catch (e) {
-//     console.error(e);
-//     return { error: 'ログイン中にエラーが発生しました' };
-//   }
-//   redirect('/');
-// }
+    if (!passwordMatch) {
+      return { error: "メールアドレスまたはパスワードが違います" };
+    }
+
+    // セッション作成
+    await createSession(user.id.toString());
+
+  } catch (e) {
+    console.error(e);
+    return { error: "ログイン中にエラーが発生しました" };
+  }
+
+  redirect("/");
+}
 
 // export async function logout() {
 //   await deleteSession();

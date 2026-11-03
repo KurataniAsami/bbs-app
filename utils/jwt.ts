@@ -5,7 +5,7 @@ import { JWTPayload, SignJWT, jwtVerify } from 'jose';
 const secretKey = 'secret';
 const encodedKey = new TextEncoder().encode(secretKey);
 
-// JWTを生成
+// JWT（トークン）を生成
 export async function encrypt(payload: JWTPayload) {  // payload(JWTに格納するデータ)の受け取り
   // 受け取ったデータをJWTのペイロードに設定する
   return new SignJWT(payload)
