@@ -2,7 +2,7 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { encrypt, decrypt } from "@/utils/jwt";
 
-// ログイン状態（セッション）を管理する処理
+// ログイン状態（セッション）を管理,取得する処理
 
 // セッションを作成
 export async function createSession(userId: string) {
