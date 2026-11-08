@@ -4,7 +4,6 @@ import { redirect } from 'next/navigation';
 import { revalidateTag, cacheTag, updateTag } from 'next/cache';
 // import { AppDataSource, getRepository } from '@/utils/data-source';
 import { verifySession } from '@/utils/session';
-import { error } from 'console';
 import { prisma } from '@/libs/prisma';
 
 export async function createPost(formData: FormData) {
@@ -70,47 +69,60 @@ export async function getPosts() {
   return posts;
 }
 
+// 詳細
 export async function getPost(id: number) {
   'use cache';
   cacheTag(`post-${id}`);
 
-  const posts = await prisma.bbsPost.findMany({
-     orderBy: {
-      createdAt: 'desc',
+  const post = await prisma.bbsPost.findUnique({
+    where: {
+      id: id,
     },
     include: {
       user: true,
     },
   });
 
-  if (!posts) return null;
+  if (!post) return null;
+
+  return post;
 }
 
-// export async function deletePost(id: number) {
-//   const session = await verifySession();
+// 削除
+export async function deletePost(id: number) {
+  const session = await verifySession();
 
-//   if (!session || !session.userId) {
-//     return { error: 'ログインしてください' };
-//   }
+  if (!session || !session.userId) {
+    return { error: 'ログインしてください' };
+  }
 
-//   const postRepository = await getRepository(Post);
-//   const post = await postRepository.findOne({
-//     where: { id },
-//     relations: { user: true },
-//   });
+  const post = await prisma.bbsPost.findUnique({
+    where: {
+      id: id,
+    },
+    include: {
+      user: true
+    },
+  })
 
-//   if (!post) {
-//     return { error: '投稿が見つかりません' };
-//   }
+  if (!post) {
+    return { error: '投稿が見つかりません' };
+  }
 
-//   // 本人の投稿か確認
-//   if (post.user.id !== Number(session.userId)) {
-//     return { error: '削除権限がありません' };
-//   }
+  // 本人の投稿か確認
+  if (post.user.id !== Number(session.userId)) {
+    return { error: '削除権限がありません' };
+  }
 
-//   await postRepository.remove(post);
+  await prisma.bbsPost.delete({
+    where: {
+      id: id,
+    },
+  });
 
-//   updateTag('posts');
-//   updateTag('posts');
-//   redirect('/');
-// }
+  // 一覧と詳細の両方のキャッシュを更新
+  updateTag('posts');
+  updateTag(`post-${id}`);
+  
+  redirect('/');
+}
