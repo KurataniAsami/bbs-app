@@ -4,6 +4,7 @@ import { getPost } from "@/actions/post";
 import { Suspense } from 'react';
 import { verifySession } from "@/utils/session";
 import DeleteButton from "@/app/components/DeleteButton";
+import EditButton from "@/app/components/EditButton";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -48,9 +49,15 @@ async function BbsDetailContent({ params }: Props) {
           createdAt={post.createdAt}
         />
 
-        {isOwner && (
-          <DeleteButton postId={post.id} />
-        )}
+        <div className="flex items-center ml-5">
+          {isOwner && (
+            <EditButton postId={post.id} />
+          )}
+
+          {isOwner && (
+            <DeleteButton postId={post.id} />
+          )}
+        </div>
       </div>
     </div>
   );

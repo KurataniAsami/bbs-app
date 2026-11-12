@@ -4,7 +4,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import DeleteButton from "./DeleteButton";
 
 type Props = {
   id: number
@@ -38,7 +37,6 @@ export default async function BbsDetailPage({
           {content}
         </CardContent>
       </Card>
-
     </div>
   );
 };

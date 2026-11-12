@@ -64,7 +64,7 @@ export default function LoginPage() {
               type="submit"
               className="w-full mt-3 rounded py-3 mb-3 bg-blue-500 text-white"
             >
-              登録する
+              ログイン
             </button>
           </form>
 

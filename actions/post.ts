@@ -1,8 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { revalidateTag, cacheTag, updateTag } from 'next/cache';
-// import { AppDataSource, getRepository } from '@/utils/data-source';
+import { cacheTag, updateTag } from 'next/cache';
 import { verifySession } from '@/utils/session';
 import { prisma } from '@/libs/prisma';
 
@@ -55,7 +54,6 @@ export async function getPosts() {
   'use cache';
   cacheTag('posts');
 
-
   // 投稿一覧を取得（作成日時の降順）
   const posts = await prisma.bbsPost.findMany({
     orderBy: {
@@ -86,6 +84,30 @@ export async function getPost(id: number) {
   if (!post) return null;
 
   return post;
+}
+
+// 編集
+export async function updatePost(formData: FormData) {
+  const id = Number(formData.get('id'));
+  const title = formData.get('title') as string;
+  const content = formData.get('content') as string;
+
+  // 記事を更新
+  await prisma.bbsPost.update({
+    where: {
+      id,
+    },
+    data: {
+      title,
+      content,
+    },
+  });
+
+  // キャッシュを更新
+  updateTag('posts');
+  updateTag(`post-${id}`);
+
+  redirect('/');
 }
 
 // 削除

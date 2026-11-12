@@ -2,8 +2,6 @@
 
 import { redirect } from 'next/navigation';
 import bcrypt from "bcrypt";
-// import { User } from '@/entities/User';
-// import { User } from '@/types/post';
 // import { getRepository } from '@/utils/data-source';
 import { createSession, deleteSession } from '@/utils/session';
 import { prisma } from '@/libs/prisma';
@@ -88,7 +86,7 @@ export async function login(formData: FormData) {
   redirect("/");
 }
 
-// export async function logout() {
-//   await deleteSession();
-//   redirect('/login');
-// }
+export async function logout() {
+  await deleteSession();
+  redirect('/login');
+}
